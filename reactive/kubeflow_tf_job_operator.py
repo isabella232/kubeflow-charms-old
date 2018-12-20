@@ -8,6 +8,11 @@ from charms.reactive import when, when_not, when_any
 from charms import layer
 
 
+@when('charm.kubeflow-tf-job-operator.started')
+def charm_ready():
+    layer.status.active('')
+
+
 @when_any('layer.docker-resource.tf-operator-image.changed',
           'config.changed')
 def update_image():
