@@ -10,6 +10,12 @@ from charms.reactive import data_changed
 from charms import layer
 
 
+@when('charm.kubeflow-tf-serving.has-model')
+@when('charm.kubeflow-tf-serving.started')
+def charm_ready():
+    layer.status.active('')
+
+
 @when('config.changed.model')
 def update_model():
     clear_flag('charm.kubeflow-tf-serving.has-model')
@@ -37,6 +43,7 @@ def get_model():
     else:
         clear_flag('charm.kubeflow-tf-serving.has-model')
         unitdata.kv().unset('charm.kubeflow-tf-serving.model')
+        layer.status.waiting('waiting for model')
 
 
 @when('layer.docker-resource.tf-serving-image.available')
