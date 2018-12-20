@@ -8,6 +8,11 @@ from charms.reactive import when, when_not
 from charms import layer
 
 
+@when('charm.kubeflow-pytorch-operator.started')
+def charm_ready():
+    layer.status.active('')
+
+
 @when('config.changed')
 def update_config():
     clear_flag('charm.kubeflow-pytorch-operator.started')
