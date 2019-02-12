@@ -1,7 +1,5 @@
 name: kubeflow-seldon-cluster-manager
-summary: |
-  Seldon Core is an open source platform for deploying machine
-  learning models on Kubernetes.
+summary: Deploys ML models on Kubernetes
 maintainers:
   - "Adam Stokes <adam.stokes@canonical.com>"
   - "Cory Johns <cory.johns@canonical.com>"
