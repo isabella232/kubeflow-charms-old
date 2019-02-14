@@ -23,13 +23,10 @@ resources:
     description: 'Image for tensorflow-serving'
     auto-fetch: true
     upstream-source: tensorflow/serving:1.12.0
-  # TODO: Support model resource.  The SavedModel format is actually a
-  #       directory, so we would need to request it as a tarball or such
-  #       and then unzip it and read all the files in manually, or possibly
-  #       do something fancy with storage.
-  #model:
-  #  type: file
-  #  filename: model
-  #  description: |
-  #    Model to serve. This can also be provided via the 'model-path'
-  #    config option, but the resource will be preferred over the option.
+storage:
+  models:
+    type: filesystem
+    description: Where TF Serving will look for models
+    location: /models
+    multiple:
+      range: 0-1
