@@ -1,9 +1,56 @@
 dist: xenial
 sudo: required
 language: python
+python: 3.7
 install:
-  - sudo apt purge libyaml-dev
+  - sudo apt purge libyaml-dev lxc* lxd*
   - sudo snap install charm --classic
+  - sudo snap install microk8s --classic
+  - sudo snap install juju --classic
+  - sudo snap install lxd jq yq
+  - pip install juju-wait pytest requests yasha
 
+env:
+  global:
+    - MODEL=microk8s-model
+    - CLOUD=microk8s-cloud
+    - APP_NAME=kubeflow-tf-serving
+    - PORTS="9000:9000 9001:9001"
 script:
-  - charm build
+  # Set up microk8s
+  - sudo sh -c 'echo PATH=/snap/bin:$PATH >> /etc/environment'
+  - yq r metadata.yaml 'resources' -j
+    | jq
+        -r
+        --arg us "upstream-source"
+        'to_entries | map("--resource \(.key)=\(.value|.[$us])") | join(" ")'
+    > RESOURCES
+  - sudo usermod -a -G lxd travis
+  - sudo sh -c 'lxd init --auto'
+  - sudo su travis -c 'juju bootstrap localhost'
+  - microk8s.enable dns storage dashboard
+  - microk8s.config | juju add-k8s $CLOUD
+  - juju add-model $MODEL $CLOUD
+  - juju create-storage-pool operator-storage kubernetes storage-class=microk8s-hostpath
+
+  # Clone TF Serving repo down and export its servables as a PersistentVolume
+  - microk8s.kubectl create -f https://raw.githubusercontent.com/juju-solutions/bundle-kubeflow/master/storage/local-storage.yaml
+  - juju create-storage-pool workload-storage kubernetes storage-class=local-storage
+  - sudo git clone https://github.com/tensorflow/serving.git /tfserving
+  - sudo chmod 755 -R /tfserving
+  - curl https://raw.githubusercontent.com/juju-solutions/bundle-kubeflow/master/storage/persistent-volume.yaml
+    | yasha --path=/tfserving/tensorflow_serving/servables/tensorflow/testdata/ --hostname=$(hostname) - -o -
+    | microk8s.kubectl create -f -
+
+  # Build charm and deploy it
+  - charm build . -o /tmp/build-charm
+  - juju deploy
+      /tmp/build-charm/builds/kubeflow-*
+      $(<RESOURCES)
+      --storage models=workload-storage,,1G
+      --config model=saved_model_half_plus_two_cpu/half_plus_two
+  - juju wait -w --verbose
+
+  # Run tests
+  - microk8s.kubectl port-forward $(microk8s.kubectl -n $MODEL get svc -l juju-application=$APP_NAME -o name) -n $MODEL $PORTS &
+  - pytest
