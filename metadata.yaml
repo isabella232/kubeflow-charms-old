@@ -1,21 +1,19 @@
 name: kubeflow-tf-serving
+display-name: TensorFlow Serving
 summary: TensorFlow Serving for KubeFlow
 maintainers:
-  - "Adam Stokes <adam.stokes@canonical.com>"
-  - "Cory Johns <cory.johns@canonical.com>"
-  - "George Kraft <george.kraft@canonical.com>"
-  - "Kevin Monroe <kevin.monroe@canonical.com>"
-  - "Konstantinos Tsakalozos <kos.tsakalozos@canonical.com>"
-  - "Mike Wilson <mike.wilson@canonical.com>"
-  - "Tim Van Steenburgh <tim.van.steenburgh@canonical.com>"
+  - Cory Johns <cory.johns@canonical.com>
+  - Kenneth Koski <kenneth.koski@canonical.com>
+  - Tim Van Steenburgh <tim.van.steenburgh@canonical.com>
+  - Ian Booth <ian.booth@canonical.com>
 description: |
   This charm deploys TensorFlow Serving configured for use with
   Kubeflow to Kubernetes models in Juju.
 tags:
-  - machine-learning
   - ai
   - bigdata
   - kubeflow
+  - machine-learning
   - tensorflow
 series:
   - kubernetes
