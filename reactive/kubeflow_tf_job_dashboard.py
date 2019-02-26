@@ -1,7 +1,8 @@
+import yaml
+from charmhelpers.core import hookenv
+from charms import layer
 from charms.reactive import set_flag, clear_flag
 from charms.reactive import when, when_not
-
-from charms import layer
 
 
 @when('charm.kubeflow-tf-job-dashboard.started')
@@ -20,8 +21,24 @@ def start_charm():
     layer.status.maintenance('configuring container')
 
     image_info = layer.docker_resource.get_info('tf-operator-image')
+    port = 8080
 
     layer.caas_base.pod_spec_set({
+        'service': {
+            'annotations': {
+                'getambassador.io/config': yaml.dump_all([
+                    {
+                        'apiVersion': 'ambassador/v0',
+                        'kind':  'Mapping',
+                        'name':  'tf_dashboard',
+                        'prefix': '/tfjobs/',
+                        'rewrite': '/tfjobs/',
+                        'service': f'{hookenv.service_name()}:{port}',
+                        'timeout_ms': 30000,
+                    },
+                ]),
+            },
+        },
         'containers': [
             {
                 'name': 'tf-job-dashboard',
@@ -36,7 +53,7 @@ def start_charm():
                 'ports': [
                     {
                         'name': 'tf-dashboard',
-                        'containerPort': 8080,
+                        'containerPort': port,
                     },
                 ],
             },
