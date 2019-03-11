@@ -34,11 +34,11 @@ script:
   - juju create-storage-pool operator-storage kubernetes storage-class=microk8s-hostpath
 
   # Clone TF Serving repo down and export its servables as a PersistentVolume
-  - microk8s.kubectl create -f https://raw.githubusercontent.com/juju-solutions/bundle-kubeflow/master/storage/local-storage.yaml
+  - microk8s.kubectl create -f https://raw.githubusercontent.com/juju-solutions/bundle-kubeflow/master/storage/local-storage.yml
   - juju create-storage-pool workload-storage kubernetes storage-class=local-storage
   - sudo git clone https://github.com/tensorflow/serving.git /tfserving
   - sudo chmod 755 -R /tfserving
-  - curl https://raw.githubusercontent.com/juju-solutions/bundle-kubeflow/master/storage/persistent-volume.yaml
+  - curl https://raw.githubusercontent.com/juju-solutions/bundle-kubeflow/master/storage/persistent-volume.yml
     | yasha --path=/tfserving/tensorflow_serving/servables/tensorflow/testdata/ --hostname=$(hostname) - -o -
     | microk8s.kubectl create -f -
 
