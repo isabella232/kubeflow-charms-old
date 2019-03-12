@@ -1,4 +1,5 @@
 name: kubeflow-tf-job-dashboard
+display-name: TensorFlow Job Dashboard
 summary: The TensorFlow Job Dashboard for KubeFlow
 maintainers:
   - Juju Developers <juju@lists.ubuntu.com>
