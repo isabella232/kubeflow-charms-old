@@ -18,3 +18,6 @@ resources:
     description: 'Image for tf-operator'
     auto-fetch: true
     upstream-source: 'gcr.io/kubeflow-images-public/tf_operator:v0.4.0'
+requires:
+  ambassador:
+    interface: ambassador
