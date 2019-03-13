@@ -1,8 +1,19 @@
 import yaml
 from charmhelpers.core import hookenv
 from charms import layer
-from charms.reactive import set_flag, clear_flag
-from charms.reactive import when, when_not
+from charms.reactive import (
+    clear_flag,
+    is_flag_set,
+    register_trigger,
+    set_flag,
+    when,
+    when_not,
+)
+
+register_trigger(when='endpoint.ambassador.joined',
+                 clear_flag='charm.kubeflow-tf-job-dashboard.started')
+register_trigger(when_not='endpoint.ambassador.joined',
+                 clear_flag='charm.kubeflow-tf-job-dashboard.started')
 
 
 @when('charm.kubeflow-tf-job-dashboard.started')
@@ -23,21 +34,26 @@ def start_charm():
     image_info = layer.docker_resource.get_info('tf-operator-image')
     port = 8080
 
+    if is_flag_set('endpoint.ambassador.joined'):
+        annotations = {
+            'getambassador.io/config': yaml.dump_all([
+                {
+                    'apiVersion': 'ambassador/v0',
+                    'kind':  'Mapping',
+                    'name':  'tf_dashboard',
+                    'prefix': '/tfjobs/',
+                    'rewrite': '/tfjobs/',
+                    'service': f'{hookenv.service_name()}:{port}',
+                    'timeout_ms': 30000,
+                },
+            ]),
+        }
+    else:
+        annotations = {}
+
     layer.caas_base.pod_spec_set({
         'service': {
-            'annotations': {
-                'getambassador.io/config': yaml.dump_all([
-                    {
-                        'apiVersion': 'ambassador/v0',
-                        'kind':  'Mapping',
-                        'name':  'tf_dashboard',
-                        'prefix': '/tfjobs/',
-                        'rewrite': '/tfjobs/',
-                        'service': f'{hookenv.service_name()}:{port}',
-                        'timeout_ms': 30000,
-                    },
-                ]),
-            },
+            'annotations': annotations,
         },
         'containers': [
             {
