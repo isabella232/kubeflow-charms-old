@@ -1,11 +1,10 @@
 import os
+from pathlib import Path
+
 import yaml
-
 from charmhelpers.core import hookenv
-from charms.reactive import set_flag, clear_flag
-from charms.reactive import when, when_not
-
 from charms import layer
+from charms.reactive import set_flag, clear_flag, when, when_not
 
 
 @when('charm.kubeflow-pytorch-operator.started')
@@ -29,10 +28,9 @@ def start_charm():
     layer.status.maintenance('configuring container')
 
     config = hookenv.config()
-    conf_dir = '/etc/config'
-    conf_file = 'controller_config_file.yaml'
-    conf_path = '/'.join([conf_dir, conf_file])
     image_info = layer.docker_resource.get_info('pytorch-operator-image')
+
+    crd = yaml.load(Path('files/crd-v1beta1.yaml').read_text())
 
     conf_data = {}
     if config['pytorch-default-image']:
@@ -48,11 +46,11 @@ def start_charm():
                     'password': image_info.password,
                 },
                 'command': [
-                    '/pytorch-operator',
-                    '--controller-config-file={}'.format(conf_path),
+                    '/pytorch-operator.v1beta1',
                     '--alsologtostderr',
                     '-v=1',
                 ],
+                # Otherwise Juju sits at `waiting for container`
                 'ports': [
                     {
                         'name': 'dummy',
@@ -66,23 +64,21 @@ def start_charm():
                 'files': [
                     {
                         'name': 'configs',
-                        'mountPath': conf_dir,
+                        'mountPath': '/etc/config',
                         'files': {
-                            conf_file: yaml.dump(conf_data),
+                            'controller_config_file.yaml': yaml.dump(conf_data),
                         },
                     },
                 ],
             },
         ],
-        'customResourceDefinition': [
-            {
-                'group': 'kubeflow.org',
-                'version': 'v1alpha1',
-                'scope': 'Namespaced',
-                'kind': 'PyTorchJob',
-                'validation': {}
-            },
-        ],
+        'customResourceDefinition': [{
+            'group': crd['spec']['group'],
+            'version': crd['spec']['version'],
+            'scope': crd['spec']['scope'],
+            'kind': crd['spec']['names']['kind'],
+            'validation': crd['spec']['validation']['openAPIV3Schema']['properties']['spec'],
+        }],
     })
 
     layer.status.maintenance('creating container')
