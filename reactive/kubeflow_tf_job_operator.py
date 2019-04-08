@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+
 import yaml
 
 from charmhelpers.core import hookenv
@@ -28,6 +30,8 @@ def start_charm():
     conf_dir = '/etc/tf_operator'
     conf_file = 'controller_config_file.yaml'
     image_info = layer.docker_resource.get_info('tf-operator-image')
+
+    crd = yaml.load(Path(f"files/crd-{config['job-version']}.yaml").read_text())
 
     if config['job-version'] == 'v1alpha2':
         command = [
@@ -79,47 +83,9 @@ def start_charm():
                 ],
             },
         ],
-        'customResourceDefinition': [
-            {
-                'group': 'kubeflow.org',
-                'version': 'v1alpha2',
-                'scope': 'Namespaced',
-                'kind': 'TFJob',
-                'validation': {
-                    'properties': {
-                        'tfReplicaSpecs': {
-                            'properties': {
-                                'Worker': {
-                                    'properties': {
-                                        'replicas': {
-                                            'type': 'integer',
-                                            'minimum': 1
-                                        }
-                                    }
-                                },
-                                'PS': {
-                                    'properties': {
-                                        'replicas': {
-                                            'type': 'integer',
-                                            'minimum': 1
-                                        }
-                                    }
-                                },
-                                'Chief': {
-                                    'properties': {
-                                        'replicas': {
-                                            'type': 'integer',
-                                            'minimum': 1,
-                                            'maximum': 1
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-        ],
+        'customResourceDefinitions': {
+            crd['metadata']['name']: crd['spec'],
+        },
     })
 
     layer.status.maintenance('creating container')
