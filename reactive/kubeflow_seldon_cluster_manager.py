@@ -1,13 +1,8 @@
 import os
-from pathlib import Path
-
-from jinja2 import Template
 
 from charmhelpers.core import hookenv
-from charms.reactive import set_flag, clear_flag, endpoint_from_flag
-from charms.reactive import when, when_not
-
 from charms import layer
+from charms.reactive import set_flag, clear_flag, endpoint_from_flag, when, when_not
 
 
 @when('charm.kubeflow-seldon-cluster-manager.started')
@@ -46,13 +41,35 @@ def start_charm():
     redis = endpoint_from_flag('endpoint.redis.available')
     redis_application_name = redis.all_joined_units[0].application_name
     model = os.environ['JUJU_MODEL_NAME']
-    rendered_podspec = Template(Path('reactive/podspec.yaml.j2').read_text()).render(
-        model=model,
-        config=config,
-        image_info=image_info,
-        redis_application_name=redis_application_name,
-    )
-    layer.caas_base.pod_spec_set(rendered_podspec)
+
+    layer.caas_base.pod_spec_set({
+        'containers': [
+            {
+                'name': 'seldon-cluster-manager',
+                'imageDetails': {
+                    'imagePath': image_info.registry_path,
+                    'username': image_info.username,
+                    'password': image_info.password,
+                },
+                'ports': [
+                    {
+                        'name': 'cluster-manager',
+                        'containerPort': 8080,
+                    },
+                ],
+                'config': {
+                    'ENGINE_CONTAINER_IMAGE_AND_VERSION': config['engine-image'],
+                    'ENGINE_CONTAINER_IMAGE_PULL_POLICY': 'IfNotPresent',
+                    'ENGINE_CONTAINER_SERVICE_ACCOUNT_NAME': 'default',
+                    'JAVA_OPTS': config['java-opts'],
+                    'SELDON_CLUSTER_MANAGER_POD_NAMESPACE': model,
+                    'SELDON_CLUSTER_MANAGER_REDIS_HOST': f'juju-{redis_application_name}',
+                    'SELDON_CLUSTER_MANAGER_SINGLE_NAMESPACE': True,
+                    'SPRING_OPTS': config['spring-opts'],
+                },
+            },
+        ],
+    })
 
     layer.status.maintenance('creating container')
     set_flag('charm.kubeflow-seldon-cluster-manager.started')
