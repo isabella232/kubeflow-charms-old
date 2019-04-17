@@ -36,7 +36,6 @@ def start_charm():
     image_info = layer.docker_resource.get_info('api-frontend-image')
     redis = endpoint_from_flag('endpoint.redis.available')
     redis_application_name = redis.all_joined_units[0].application_name
-    redis_service_name = 'juju-{}'.format(redis_application_name)
     model = os.environ['JUJU_MODEL_NAME']
 
     layer.caas_base.pod_spec_set({
@@ -59,9 +58,10 @@ def start_charm():
                     },
                 ],
                 'config': {
-                    'SELDON_CLUSTER_MANAGER_REDIS_HOST': redis_service_name,
+                    'SELDON_CLUSTER_MANAGER_REDIS_HOST': redis_application_name,
                     'SELDON_CLUSTER_MANAGER_POD_NAMESPACE': model,
                     'SELDON_ENGINE_KAFKA_SERVER': 'kafka:9092',
+                    'SELDON_SINGLE_NAMESPACE': True,
                 },
                 'files': [
                 ],
