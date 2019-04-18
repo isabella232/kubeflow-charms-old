@@ -1,5 +1,6 @@
 name: kubeflow-seldon-api-frontend
-summary: Deploys ML models on Kubernetes
+display-name: Seldon API Frontend
+summary: The API Frontend component of Seldon
 maintainers:
   - "Adam Stokes <adam.stokes@canonical.com>"
   - "Cory Johns <cory.johns@canonical.com>"
