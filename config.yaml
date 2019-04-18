@@ -1,7 +1,7 @@
 options:
   engine-image:
     type: string
-    default: 'seldonio/engine:0.1.6'
+    default: 'seldonio/engine:0.2.6'
     description: |
       The image and version tag to use for Seldon Engine.
   java-opts:
