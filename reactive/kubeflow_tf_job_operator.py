@@ -83,6 +83,14 @@ def start_charm():
                 ],
             },
         ],
+        # Backwards compatibility for juju < 2.5.4
+        'customResourceDefinition': [{
+            'group': crd['spec']['group'],
+            'version': crd['spec']['version'],
+            'scope': crd['spec']['scope'],
+            'kind': crd['spec']['names']['kind'],
+            'validation': crd['spec']['validation']['openAPIV3Schema']['properties']['spec'],
+        }],
         'customResourceDefinitions': {
             crd['metadata']['name']: crd['spec'],
         },
