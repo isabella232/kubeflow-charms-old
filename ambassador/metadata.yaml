@@ -1,0 +1,24 @@
+name: kubeflow-ambassador
+display-name: Ambassador API Gateway
+summary: The Ambassador API Gateway for KubeFlow
+maintainers:
+  - Juju Developers <juju@lists.ubuntu.com>
+description: |
+  This charm deploys the Ambassador API Gateway configured for use with
+  Kubeflow to Kubernetes models in Juju.
+tags:
+  - machine-learning
+  - ai
+  - bigdata
+  - kubeflow
+series:
+  - kubernetes
+resources:
+  ambassador-image:
+    type: oci-image
+    description: 'Image for ambassador'
+    auto-fetch: true
+    upstream-source: 'quay.io/datawire/ambassador:0.30.1'
+provides:
+  ambassador:
+    interface: ambassador
