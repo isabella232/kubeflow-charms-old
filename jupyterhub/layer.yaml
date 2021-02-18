@@ -1,0 +1,6 @@
+repo: https://github.com/juju-solutions/charm-kubeflow-tf-hub.git
+includes:
+  - "layer:caas-base"
+  - "layer:docker-resource"
+  - "layer:status"
+  - "interface:ambassador"
