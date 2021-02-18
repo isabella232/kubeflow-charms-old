@@ -1,0 +1,5 @@
+repo: https://github.com/juju-solutions/charm-kubeflow-pytorch-operator.git
+includes:
+  - "layer:caas-base"
+  - "layer:docker-resource"
+  - "layer:status"

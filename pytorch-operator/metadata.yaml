@@ -1,0 +1,24 @@
+name: kubeflow-pytorch-operator
+display-name: PyTorch Job Operator
+summary: Kubernetes Custom Resource and Operator for PyTorch jobs
+maintainers:
+  - Cory Johns <cory.johns@canonical.com>
+  - Kenneth Koski <kenneth.koski@canonical.com>
+  - Tim Van Steenburgh <tim.van.steenburgh@canonical.com>
+  - Ian Booth <ian.booth@canonical.com>
+description: |
+  This charm deploys the specification and implementation of the
+  PyTorch custom resource definition.
+tags:
+  - ai
+  - bigdata
+  - kubeflow
+  - machine-learning
+series:
+  - kubernetes
+resources:
+  pytorch-operator-image:
+    type: oci-image
+    description: 'Image for pytorch-operator'
+    auto-fetch: true
+    upstream-source: 'gcr.io/kubeflow-images-public/pytorch-operator:v0.4.0'
